@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo, useCallback, memo } from 'react'
 import { Container, Row, Col, Button } from 'react-bootstrap'
 import { FaDumbbell, FaRunning, FaHeartbeat, FaClock, FaUserFriends, FaTrophy, FaChevronRight, FaStar, FaAward } from 'react-icons/fa'
 import Image from 'next/image'
@@ -8,12 +8,64 @@ import ImageModal from '@/components/ImageModal'
 import KakaoMap from '@/components/KakaoMap'
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
-// interior_1~8 (8개) + roof.jpg (1개) = 총 9개
-const interiorImages = [
-  ...Array.from({ length: 8 }, (_, i) => `${basePath}/images/interior_${i + 1}.jpg`),
-  `${basePath}/images/roof.jpg`
-]
 const GYM_ADDRESS = '경기 남양주시 다산중앙로145번길 11 지앤지메트로타워 2차 10,11층'
+
+// Gallery Image Component를 메모이제이션하여 불필요한 리렌더링 방지
+const GalleryImage = memo(({ src, index, isRoof, onOpenModal }: { src: string; index: number; isRoof: boolean; onOpenModal: (index: number) => void }) => (
+  <div 
+    className="gallery-item"
+    onClick={() => onOpenModal(index)}
+    style={{ cursor: 'pointer' }}
+  >
+    <Image
+      src={src}
+      alt={isRoof ? 'Bados Gym Rooftop' : `Bados Gym Interior ${index + 1}`}
+      width={400}
+      height={300}
+      className="gallery-image"
+      loading="lazy"
+      decoding="async"
+      placeholder="blur"
+      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+    />
+    <div className="gallery-overlay">
+      <div className="gallery-content">
+        {isRoof ? (
+          <>
+            <h3 className="gallery-title-featured">루프탑 트레이닝 공간</h3>
+            <p className="gallery-desc-featured">자연광이 가득한 프리미엄 공간</p>
+          </>
+        ) : (
+          <FaDumbbell className="gallery-icon" />
+        )}
+      </div>
+    </div>
+  </div>
+))
+
+GalleryImage.displayName = 'GalleryImage'
+
+// Full Gallery Image Component도 메모이제이션
+const FullGalleryImage = memo(({ src, index, isRoof, onOpenModal }: { src: string; index: number; isRoof: boolean; onOpenModal: (index: number) => void }) => (
+  <div 
+    className="full-gallery-item"
+    onClick={() => onOpenModal(index)}
+  >
+    <Image
+      src={src}
+      alt={isRoof ? 'Bados Gym Rooftop' : `Bados Gym Interior ${index + 1}`}
+      width={300}
+      height={300}
+      className="full-gallery-image"
+      loading="lazy"
+      decoding="async"
+      placeholder="blur"
+      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+    />
+  </div>
+))
+
+FullGalleryImage.displayName = 'FullGalleryImage'
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false)
@@ -22,36 +74,36 @@ export default function Home() {
   const featuresRef = useRef<HTMLElement>(null)
   const mapRef = useRef<HTMLElement>(null)
 
-  const scrollToGallery = () => {
+  // 이미지 배열을 useMemo로 메모이제이션
+  const interiorImages = useMemo(() => [
+    ...Array.from({ length: 8 }, (_, i) => `${basePath}/images/interior_${i + 1}.jpg`),
+    `${basePath}/images/roof.jpg`
+  ], [basePath])
+
+  const scrollToGallery = useCallback(() => {
     galleryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  }, [])
 
-  const scrollToSection = (section: 'gallery' | 'features' | 'map') => {
-    if (section === 'gallery' && galleryRef.current) {
-      galleryRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } else if (section === 'features' && featuresRef.current) {
-      featuresRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } else if (section === 'map' && mapRef.current) {
-      mapRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
-
-  const openModal = (index: number) => {
+  const openModal = useCallback((index: number) => {
     setCurrentImageIndex(index)
     setModalOpen(true)
-  }
+  }, [])
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalOpen(false)
-  }
+  }, [])
 
-  const nextImage = () => {
+  const nextImage = useCallback(() => {
     setCurrentImageIndex((prev) => (prev + 1) % interiorImages.length)
-  }
+  }, [interiorImages.length])
 
-  const prevImage = () => {
+  const prevImage = useCallback(() => {
     setCurrentImageIndex((prev) => (prev - 1 + interiorImages.length) % interiorImages.length)
-  }
+  }, [interiorImages.length])
+
+  const handleFeatureClick = useCallback(() => {
+    // 클릭 가능하지만 스크롤 이동은 하지 않음
+  }, [])
 
   return (
     <main className="gym-main">
@@ -142,32 +194,13 @@ export default function Home() {
             {interiorImages.slice(0, 6).map((src, index) => {
               const isRoof = src.includes('roof.jpg')
               return (
-                <Col xs={6} md={4} key={index}>
-                  <div 
-                    className="gallery-item"
-                    onClick={() => openModal(index)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <Image
-                      src={src}
-                      alt={isRoof ? 'Bados Gym Rooftop' : `Bados Gym Interior ${index + 1}`}
-                      width={400}
-                      height={300}
-                      className="gallery-image"
-                    />
-                    <div className="gallery-overlay">
-                      <div className="gallery-content">
-                        {isRoof ? (
-                          <>
-                            <h3 className="gallery-title-featured">루프탑 트레이닝 공간</h3>
-                            <p className="gallery-desc-featured">자연광이 가득한 프리미엄 공간</p>
-                          </>
-                        ) : (
-                          <FaDumbbell className="gallery-icon" />
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                <Col xs={6} md={4} key={`gallery-${index}`}>
+                  <GalleryImage 
+                    src={src}
+                    index={index}
+                    isRoof={isRoof}
+                    onOpenModal={openModal}
+                  />
                 </Col>
               )
             })}
@@ -190,7 +223,7 @@ export default function Home() {
             <Col xs={12} md={6} lg={4} className="mb-4">
               <div 
                 className="feature-card feature-card-clickable"
-                onClick={() => scrollToSection('gallery')}
+                onClick={handleFeatureClick}
               >
                 <div className="feature-icon mb-4">
                   <FaDumbbell />
@@ -210,7 +243,7 @@ export default function Home() {
             <Col xs={12} md={6} lg={4} className="mb-4">
               <div 
                 className="feature-card feature-card-clickable"
-                onClick={() => scrollToSection('gallery')}
+                onClick={handleFeatureClick}
               >
                 <div className="feature-icon mb-4">
                   <FaUserFriends />
@@ -244,7 +277,7 @@ export default function Home() {
             <Col xs={12} md={6} lg={4} className="mb-4">
               <div 
                 className="feature-card feature-card-clickable"
-                onClick={() => scrollToSection('gallery')}
+                onClick={handleFeatureClick}
               >
                 <div className="feature-icon mb-4">
                   <FaRunning />
@@ -264,7 +297,7 @@ export default function Home() {
             <Col xs={12} md={6} lg={4} className="mb-4">
               <div 
                 className="feature-card feature-card-clickable"
-                onClick={() => scrollToSection('gallery')}
+                onClick={handleFeatureClick}
               >
                 <div className="feature-icon mb-4">
                   <FaHeartbeat />
@@ -284,7 +317,7 @@ export default function Home() {
             <Col xs={12} md={6} lg={4} className="mb-4">
               <div 
                 className="feature-card feature-card-clickable"
-                onClick={() => scrollToSection('map')}
+                onClick={handleFeatureClick}
               >
                 <div className="feature-icon mb-4">
                   <FaTrophy />
@@ -355,19 +388,13 @@ export default function Home() {
             {interiorImages.map((src, index) => {
               const isRoof = src.includes('roof.jpg')
               return (
-                <Col xs={6} sm={4} md={3} lg={2} key={index}>
-                  <div 
-                    className="full-gallery-item"
-                    onClick={() => openModal(index)}
-                  >
-                    <Image
-                      src={src}
-                      alt={isRoof ? 'Bados Gym Rooftop' : `Bados Gym Interior ${index + 1}`}
-                      width={300}
-                      height={300}
-                      className="full-gallery-image"
-                    />
-                  </div>
+                <Col xs={6} sm={4} md={3} lg={2} key={`full-gallery-${index}`}>
+                  <FullGalleryImage 
+                    src={src}
+                    index={index}
+                    isRoof={isRoof}
+                    onOpenModal={openModal}
+                  />
                 </Col>
               )
             })}

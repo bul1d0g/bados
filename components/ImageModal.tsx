@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, memo } from 'react'
 import { FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import Image from 'next/image'
 
@@ -13,7 +13,7 @@ interface ImageModalProps {
   onPrev: () => void
 }
 
-export default function ImageModal({ images, currentIndex, isOpen, onClose, onNext, onPrev }: ImageModalProps) {
+const ImageModal = memo(function ImageModal({ images, currentIndex, isOpen, onClose, onNext, onPrev }: ImageModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return
@@ -73,4 +73,6 @@ export default function ImageModal({ images, currentIndex, isOpen, onClose, onNe
       </div>
     </div>
   )
-}
+})
+
+export default ImageModal

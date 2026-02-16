@@ -84,6 +84,7 @@ html {
   box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
   position: relative;
   overflow: hidden;
+  will-change: transform;
 }
 
 .gym-badge::before {
@@ -118,6 +119,7 @@ html {
   animation: gradient-shift 3s ease infinite;
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
   letter-spacing: -1px;
+  will-change: background-position;
 }
 
 @keyframes gradient-shift {
@@ -206,6 +208,7 @@ html {
   position: relative;
   overflow: hidden;
   letter-spacing: 0.5px;
+  will-change: transform;
 }
 
 .gym-btn-primary::before {
@@ -245,6 +248,7 @@ html {
   position: relative;
   overflow: hidden;
   letter-spacing: 0.5px;
+  will-change: transform;
 }
 
 .gym-btn-outline::before {
@@ -404,6 +408,8 @@ html {
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
+  will-change: transform;
+  contain: layout style paint;
 }
 
 .feature-card-clickable {
@@ -596,6 +602,8 @@ html {
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border: 2px solid transparent;
+  will-change: transform;
+  contain: layout style paint;
 }
 
 
@@ -610,6 +618,7 @@ html {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  will-change: transform;
 }
 
 .gallery-item:hover .gallery-image {
@@ -697,6 +706,8 @@ html {
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border: 2px solid transparent;
+  will-change: transform;
+  contain: layout style paint;
 }
 
 .full-gallery-item:hover {
@@ -712,6 +723,7 @@ html {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  will-change: transform;
 }
 
 .full-gallery-item:hover .full-gallery-image {
