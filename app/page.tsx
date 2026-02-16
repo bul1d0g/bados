@@ -7,7 +7,8 @@ import Image from 'next/image'
 import ImageModal from '@/components/ImageModal'
 import KakaoMap from '@/components/KakaoMap'
 
-const interiorImages = Array.from({ length: 16 }, (_, i) => `/images/interior_${i + 1}.jpg`)
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
+const interiorImages = Array.from({ length: 16 }, (_, i) => `${basePath}/images/interior_${i + 1}.jpg`)
 const GYM_ADDRESS = '경기 남양주시 다산중앙로145번길 11 지앤지메트로타워 2차 10,11층'
 
 export default function Home() {
@@ -41,7 +42,7 @@ export default function Home() {
       <section className="hero-section">
         <div className="hero-background">
           <Image
-            src="/images/interior_1.jpg"
+            src={`${basePath}/images/interior_1.jpg`}
             alt="Bados Gym"
             fill
             priority

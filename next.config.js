@@ -1,11 +1,17 @@
 /** @type {import('next').NextConfig} */
+const isProduction = process.env.NODE_ENV === 'production'
+const basePath = isProduction ? '/bados' : ''
+
 const nextConfig = {
   reactStrictMode: true,
   output: 'export',
-  basePath: process.env.NODE_ENV === 'production' ? '/bados' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/bados' : '',
+  basePath: basePath,
+  assetPrefix: basePath,
   images: {
     unoptimized: true,
+  },
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
   },
 }
 
