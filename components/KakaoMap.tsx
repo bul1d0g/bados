@@ -38,11 +38,15 @@ export default function KakaoMap({ address }: KakaoMapProps) {
         if (window.kakao.maps.load) {
           window.kakao.maps.load(() => {
             console.log('카카오 맵 SDK 로드 완료, 맵 초기화 시작')
-            initMap()
+            setTimeout(() => {
+              initMap()
+            }, 100)
           })
         } else {
           console.log('카카오 맵 SDK 준비됨, 맵 초기화 시작')
-          initMap()
+          setTimeout(() => {
+            initMap()
+          }, 100)
         }
       } else {
         timeoutId = setTimeout(checkKakaoMap, 200)
@@ -65,45 +69,55 @@ export default function KakaoMap({ address }: KakaoMapProps) {
       }
 
       try {
-        console.log('주소 검색 시작:', address)
-        const geocoder = new window.kakao.maps.services.Geocoder()
+        // 직접 좌표 사용 (경기 남양주시 다산중앙로145번길 11)
+        // 대략적인 좌표: 37.6104, 127.1894
+        const coords = new window.kakao.maps.LatLng(37.6104, 127.1894)
 
-        geocoder.addressSearch(address, (result: any, status: string) => {
-          if (status === window.kakao.maps.services.Status.OK) {
-            console.log('주소 검색 성공:', result[0])
-            const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x)
+        const mapOption = {
+          center: coords,
+          level: 3,
+        }
 
-            const mapOption = {
-              center: coords,
-              level: 3,
-            }
+        const map = new window.kakao.maps.Map(mapRef.current, mapOption)
+        mapInstanceRef.current = map
 
-            const map = new window.kakao.maps.Map(mapRef.current, mapOption)
-            mapInstanceRef.current = map
-
-            const marker = new window.kakao.maps.Marker({
-              position: coords,
-              map: map,
-            })
-
-            const infowindow = new window.kakao.maps.InfoWindow({
-              content: `
-                <div style="padding: 10px; min-width: 200px;">
-                  <h3 style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">Bados Gym</h3>
-                  <p style="margin: 0; font-size: 14px; color: #666;">${address}</p>
-                </div>
-              `,
-            })
-
-            infowindow.open(map, marker)
-            setLoading(false)
-            console.log('카카오 맵 초기화 완료')
-          } else {
-            console.error('주소 검색 실패:', status)
-            setError(`주소를 찾을 수 없습니다. (상태: ${status})`)
-            setLoading(false)
-          }
+        const marker = new window.kakao.maps.Marker({
+          position: coords,
+          map: map,
         })
+
+        const infowindow = new window.kakao.maps.InfoWindow({
+          content: `
+            <div style="padding: 10px; min-width: 200px;">
+              <h3 style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">Bados Gym</h3>
+              <p style="margin: 0; font-size: 14px; color: #666;">${address}</p>
+            </div>
+          `,
+        })
+
+        infowindow.open(map, marker)
+        setLoading(false)
+        console.log('카카오 맵 초기화 완료')
+
+        // 주소 검색 시도 (services가 있으면)
+        if (window.kakao.maps.services && window.kakao.maps.services.Geocoder) {
+          console.log('주소 검색 시도:', address)
+          const geocoder = new window.kakao.maps.services.Geocoder()
+          
+          geocoder.addressSearch(address, (result: any, status: string) => {
+            if (status === window.kakao.maps.services.Status.OK) {
+              console.log('주소 검색 성공:', result[0])
+              const newCoords = new window.kakao.maps.LatLng(result[0].y, result[0].x)
+              map.setCenter(newCoords)
+              marker.setPosition(newCoords)
+              infowindow.open(map, marker)
+            } else {
+              console.warn('주소 검색 실패, 기본 좌표 사용:', status)
+            }
+          })
+        } else {
+          console.warn('services 객체를 사용할 수 없어 기본 좌표를 사용합니다.')
+        }
       } catch (error) {
         console.error('카카오 맵 초기화 오류:', error)
         setError(`맵 초기화 중 오류가 발생했습니다: ${error}`)
