@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
+import KakaoMapScript from '@/components/KakaoMapScript'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './globals.css'
 
@@ -23,7 +24,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <KakaoMapScript />
+        {children}
+      </body>
     </html>
   )
 }
